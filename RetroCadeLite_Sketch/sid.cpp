@@ -212,6 +212,15 @@ void SIDVoice::setEnvelopeRelease(byte rate)
   SIDREG(SID_ADDR_SUSTAIN_RELEASE) = *(char*)&SID_REG_SUSTAIN_RELEASE;
 }
 
+void SIDVoice::handlePitchBend(int bend)
+{
+	if (currentFreq + bend > 388)
+	{
+		setFreq(currentFreq + bend);
+	}
+ 
+}
+
 void SIDVoice::handleCC(byte number, byte value)
 {
   //Handle the Control Changes for SID
@@ -281,12 +290,12 @@ void SIDVoice::ringMod(byte baseOffset, byte valueOffset, byte value)
       }  
 }
 
-void SIDVoice::setInstrument(const char* name,byte attack, byte decay, byte sustain, byte rel, bool noise, bool square, bool sawtooth, bool triangle, int pwm)
+void SIDVoice::setInstrument(byte attack, byte decay, byte sustain, byte rel, bool noise, bool square, bool sawtooth, bool triangle, int pwm)
 {
-  Serial.println("In setinstrument");
-  Serial.println(name);
-  strcpy(instrumentName, name);
-  Serial.println(instrumentName);
+  //Serial.println("In setinstrument");
+  //Serial.println(name);
+  //strcpy(instrumentName, name);  //NOTE: This didn't really seem to be used any other places, so isn't really needed here as Patch handles this.
+  //Serial.println(instrumentName);
   SID_REG_ATTACK_DECAY.ATTACK = attack;
   SID_REG_ATTACK_DECAY.DECAY = decay;
   SID_REG_SUSTAIN_RELEASE.SUSTAIN = sustain;

@@ -149,6 +149,16 @@ void YMVoice::reset()
   YM2149REG(YM_ADDR_LEVEL) = *(char*)&YM_REG_LEVEL;
 }
 
+void YMVoice::handlePitchBend(int bendRange)
+{
+	int range = bendRange/10;
+	if (currentFreq - range > 100)
+	{
+	  setFreq(currentFreq-range);
+	}
+	
+}
+
 void YMVoice::handleCC(byte number, byte value)
 {
   //Handle the Control Changes for YM2149

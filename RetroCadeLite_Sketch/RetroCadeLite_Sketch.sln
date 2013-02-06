@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RetroCadeLite_Sketch", "RetroCadeLite_Sketch.vcxproj", "{C6600551-5503-48FF-8500-0FC73BCBD000}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C6600551-5503-48FF-8500-0FC73BCBD000}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C6600551-5503-48FF-8500-0FC73BCBD000}.Debug|Win32.Build.0 = Debug|Win32
+		{C6600551-5503-48FF-8500-0FC73BCBD000}.Release|Win32.ActiveCfg = Release|Win32
+		{C6600551-5503-48FF-8500-0FC73BCBD000}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

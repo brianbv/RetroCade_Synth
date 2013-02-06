@@ -22,6 +22,8 @@
 #include "ymplayer.h"
 #include "SID.h"
 #include "YM2149.h"
+#include "Patch.h"
+
 
 #define AUDIO_J1_L WING_B_1
 #define AUDIO_J1_R WING_B_0
@@ -66,13 +68,17 @@ enum kButtonDirection {
         None                = 5
 };
 
+
 class RETROCADE
 { 
   public:
+    Patch currentPatch;
+
    //YMPLAYER ymplayer;
    //MODPLAYER modplayer; 
    YM2149 ym2149;
    SID sid;   
+   void setup();
    void setupMegaWing(); 
    void handleJoystick();
    void setTimeout();
@@ -81,9 +87,12 @@ class RETROCADE
    void printFile(const char* ext);
    boolean sdFsActive();
    boolean smallFsActive();
+   void changePatch(int patcNum);
+   void mainMenu();
    void spaceInvadersLCD();
   private:
    void initSD();
+  
    int fileExtension(const char* name, const char* extension, size_t length);
    void smallfsModFileJoystick(byte type);
    void instrumentJoystick();
@@ -106,5 +115,9 @@ class RETROCADE
    //File curMODFile;
    char * fileName;
 };
+
+
+
+
 
 #endif // LIB_RetroCade_H_

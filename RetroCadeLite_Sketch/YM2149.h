@@ -15,7 +15,7 @@
 #include <zpuino-types.h>
 #include <zpuino.h>
 #include "Arduino.h"
-
+#include "Voice.h"
 
 #define YM_ADDR_FREQ_A 0x00
 #define YM_ADDR_FREQ_B 0x02
@@ -31,7 +31,7 @@
 #define YM2149BASE IO_SLOT(13)
 #define YM2149REG(x) REGISTER(YM2149BASE,x)  
 
-class YMVoice
+class YMVoice : Voice
 { 
   public:
     void setBase(int freqAddress, int volumeAddress);
@@ -43,6 +43,7 @@ class YMVoice
     void setNoise(boolean active);
     void reset(); 
     void handleCC(byte number, byte value); 
+	void handlePitchBend(int value);
     int getCurrentFreq(); 
     byte getVolume();   
   private:

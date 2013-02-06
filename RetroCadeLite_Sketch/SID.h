@@ -15,6 +15,7 @@
 #include <zpuino-types.h>
 #include <zpuino.h>
 #include "Arduino.h"
+#include "Voice.h"
 
 #define SID_ADDR_BASE_V1               0x00
 #define SID_ADDR_BASE_V2               0x07
@@ -30,7 +31,7 @@
 #define SIDBASE IO_SLOT(14)
 #define SIDREG(x) REGISTER(SIDBASE,x)
 
-class SIDVoice
+class SIDVoice : public Voice
 { 
   public:
     SIDVoice();
@@ -53,9 +54,10 @@ class SIDVoice
     void setEnvelopeDecay(byte rate);
     void setEnvelopeSustain(byte level);
     void setEnvelopeRelease(byte rate); 
-    void setInstrument(const char* name, byte attack, byte decay, byte sustain, byte release, bool noise, bool square, bool sawtooth, bool triangle, int pwm);
+    void setInstrument(byte attack, byte decay, byte sustain, byte release, bool noise, bool square, bool sawtooth, bool triangle, int pwm);
     void loadInstrument(byte instrument);
     void handleCC(byte number, byte value);
+	void handlePitchBend(int value);
     void reset(); 
     int getCurrentFreq();
   private:

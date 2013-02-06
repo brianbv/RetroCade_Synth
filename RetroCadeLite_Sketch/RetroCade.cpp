@@ -10,7 +10,8 @@
  #include "RetroCade.h"
  #include "LiquidCrystal.h"
  #include "binary.h"
- #include "spaceinvaders.h"
+// #include "spaceinvaders.h"
+ #include "Patch.h"
  
 #define FREQ 17000          //Freq for modplayer 
 #define TIMEOUTMAX 30000    //Timeout for joystick 
@@ -30,19 +31,35 @@
 char smallfsModTrack[] = "track1.mod";
 //char smallfsYmTrack[] = "track1.mod";
 
-#define SIDINSTRUMENTS 9          
-char sidInstrumentName[SIDINSTRUMENTS][20]=        //TODO: Goofy way to do this, change to struct or function when strcpy works.
-        { "Calliope",                                              
-          "Drum",
-          "Accordian", 
-          "Guitar",           
-          "Harpsicord", 
-          "Organ", 
-          "Trumpet", 
-          "Xylophone",           
-          "Flute" };  
+#define MAX_PATCHES 9          
+
  
 LiquidCrystal lcd(WING_B_10, WING_B_9, WING_B_8, WING_B_7, WING_B_6, WING_B_5, WING_B_4);
+
+
+void RETROCADE::setup()
+{
+	setupMegaWing();
+
+	 ///Give some volume
+	ym2149.V1.setVolume(11);
+	ym2149.V2.setVolume(11);
+    ym2149.V3.setVolume(11);   
+    sid.setVolume(15);
+
+    //Select an instrument for each SID Voice.
+    sid.V1.setInstrument(0,0,15,0,0,0,0,1,0); //Calliope
+    sid.V2.setInstrument(12,0,12,0,0,0,1,0,0); //Accordian
+    sid.V3.setInstrument(0,9,0,0,0,1,0,0,512); //Harpsicord
+
+	//init patch with defaults
+	currentPatch.setVoices(&sid.V1,&sid.V2,&sid.V3);
+    currentPatch.setMode(PATCH_MODE_UNISON);
+
+	//retrocade.modplayer.setup();
+	//retrocade.ymplayer.setup(&retrocade.ym2149); 
+}
+
 
 void RETROCADE::setupMegaWing()
 {
@@ -131,6 +148,7 @@ void RETROCADE::setupMegaWing()
 
 }
 
+
 void RETROCADE::initSD()
 {
   int i;
@@ -216,9 +234,9 @@ void RETROCADE::handleJoystick()
   if (buttonPressed < 5) {
     switch (lcdMode) {
       case WELCOME:
-        lcd.clear();
-        lcd.setCursor(0,1);
-        lcd.print("RetroCade Synth");        
+		mainMenu();
+
+		
         break;
       case CHANNEL:
         lcd.clear();
@@ -257,7 +275,7 @@ void RETROCADE::handleJoystick()
         lcd.setCursor(0,0);
         lcd.print("RetroCade Synth");          
         lcd.setCursor(0,1);
-        lcd.print("Version: 1.01L");          
+        lcd.print("Version: 1.02L");          
         break;        
       default:
         //return;
@@ -266,6 +284,8 @@ void RETROCADE::handleJoystick()
     buttonPressed = None; 
   }  
 }
+
+ 
 
 void RETROCADE::ymFileJoystick() 
 {
@@ -314,13 +334,18 @@ void RETROCADE::modFileJoystick()
         }    
 }
 
+void RETROCADE::changePatch(int patch)
+{
+
+}
+
 void RETROCADE::instrumentJoystick() 
 {
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("SIDV1 Instrument");
   if (buttonPressed == Up) {
-    if (activeInstrument < (SIDINSTRUMENTS -1)) {
+    if (activeInstrument < (MAX_PATCHES -1)) {
       activeInstrument++;      
       sid.V1.loadInstrument(activeInstrument);  
     }
@@ -332,7 +357,9 @@ void RETROCADE::instrumentJoystick()
     }
   }            
   lcd.setCursor(0,1);
-  lcd.print(sidInstrumentName[activeInstrument]);     
+
+  //TODO: print patch name
+  lcd.print("TODO:PName");     
 }
 
 void RETROCADE::smallfsModFileJoystick(byte type) 
@@ -451,6 +478,15 @@ int RETROCADE::fileExtension(const char* name, const char* extension, size_t len
   return 0;
 }
 
+void RETROCADE::mainMenu()
+{
+    lcd.clear();
+    lcd.setCursor(0,1);
+    lcd.print("RetroCade Synth");       
+	
+	
+}
+
 void RETROCADE::spaceInvadersLCD(){
 /* 
   This Space Invaders alien crawling along the RetroCade LCD was created by JO3RI and adapted to the RetroCade by Jack Gassett.
@@ -461,7 +497,8 @@ void RETROCADE::spaceInvadersLCD(){
   http://www.JO3RI.be/arduino/arduino-projects/lcd-16x2-demo
  
 */  
-  
+ 
+  /*
   if (invadersTimer == 0 && lcdMode == WELCOME)
   {
        if (invadersCurSeg == 10){
@@ -643,5 +680,6 @@ void RETROCADE::spaceInvadersLCD(){
           lcd.print("oops");
           break;  
       }  
+  }*/
+  
   }
-}
