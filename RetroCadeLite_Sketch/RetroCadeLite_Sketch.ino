@@ -82,7 +82,8 @@ ChangeLog:
 
 HardwareSerial Serial1(11);   //This is to define Serial1 for the ZPUino.
 
-
+#include "Config.h"
+ 
 
 #include "MIDI.h"          //Be sure to change MIDI.h to user Serial1 instead of Serial
 #include "SmallFS.h"
@@ -93,7 +94,7 @@ HardwareSerial Serial1(11);   //This is to define Serial1 for the ZPUino.
 #include "RetroCadeMidi.h" //retrocade midi stuff
 
 #undef DO_CHECKS
-//#define DEBUG
+
 
 
 

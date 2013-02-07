@@ -7,26 +7,20 @@
  *	@date		9/11/12
  *  License		GPL
  */
- #include "RetroCade.h"
- #include "LiquidCrystal.h"
- #include "binary.h"
-// #include "spaceinvaders.h"
- #include "Patch.h"
+
+#include "RetroCade.h"
+#include "LiquidCrystal.h"
+#include "binary.h"
+
+#include "Patch.h"
+#include "Menu.h"
+#include "spaceinvaders.h"
  
 #define FREQ 17000          //Freq for modplayer 
 #define TIMEOUTMAX 30000    //Timeout for joystick 
 #define INVADERSTIMERMAX 9000    //Timeout for LCD 
 
-//Defines for lcdMode
-#define WELCOME 0
-#define CHANNEL 1
-#define INSTRUMENT 2
-#define MODFILE 5
-#define SMALLFSMODFILE 6
-#define YMFILE 7
-#define SMALLFSYMFILE 8
-#define ABOUT 3
-#define LCDMODEMAX 4
+
 
 char smallfsModTrack[] = "track1.mod";
 //char smallfsYmTrack[] = "track1.mod";
@@ -72,7 +66,7 @@ void RETROCADE::setupMegaWing()
   invadersCurLoc = 0;
   invadersCurSeg = 1;
   invadersTimer = INVADERSTIMERMAX;
-  lcdMode = WELCOME;
+  lcdMode = MENU_WELCOME;
   buttonPressed = None;
   
 
@@ -232,16 +226,26 @@ void RETROCADE::handleJoystick()
   }  
   
   if (buttonPressed < 5) {
-    switch (lcdMode) {
-      case WELCOME:
-		mainMenu();
+         RETROCADE::setLcdMode(lcdMode);
+    }
 
-		
+    buttonPressed = None; 
+    
+}
+
+void RETROCADE::setLcdMode(byte mode)
+{
+	lcdMode=mode;
+
+	switch (lcdMode) {
+      case MENU_WELCOME:
+		mainMenu();		
         break;
-      case CHANNEL:
+      case MENU_CHANNEL:
         lcd.clear();
         lcd.setCursor(0,0);
         lcd.print("Channel");
+
         if (buttonPressed == Up) {
           if (activeChannel<7)
             activeChannel++;  
@@ -253,23 +257,23 @@ void RETROCADE::handleJoystick()
         lcd.setCursor(0,1);
         lcd.print(activeChannel);        
         break;
-      case INSTRUMENT:
+      case MENU_INSTRUMENT:
         instrumentJoystick();
         break;
-      case MODFILE:
+      case MENU_MODFILE:
         smallfsActiveTrack = 0;
         modFileJoystick();
         break;
-      case SMALLFSMODFILE:
+      case MENU_SMALLFSMODFILE:
         smallfsModFileJoystick(0);
         break;        
-      case YMFILE:
+      case MENU_YMFILE:
         ymFileJoystick();
         break; 
-      case SMALLFSYMFILE:   
+      case MENU_SMALLFSYMFILE:   
         smallfsModFileJoystick(1);
         break;           
-      case ABOUT:
+      case MENU_ABOUT:
         smallfsActiveTrack = 0;
         lcd.clear();
         lcd.setCursor(0,0);
@@ -279,13 +283,9 @@ void RETROCADE::handleJoystick()
         break;        
       default:
         //return;
-        break;       
-    }   
-    buttonPressed = None; 
-  }  
+        break; 
+	}
 }
-
- 
 
 void RETROCADE::ymFileJoystick() 
 {
@@ -341,25 +341,104 @@ void RETROCADE::changePatch(int patch)
 
 void RETROCADE::instrumentJoystick() 
 {
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("SIDV1 Instrument");
-  if (buttonPressed == Up) {
-    if (activeInstrument < (MAX_PATCHES -1)) {
-      activeInstrument++;      
-      sid.V1.loadInstrument(activeInstrument);  
-    }
-  }        
-  if (buttonPressed == Down) {
-    if (activeInstrument!=0) {
-      activeInstrument--; 
-      sid.V1.loadInstrument(activeInstrument);  
-    }
-  }            
-  lcd.setCursor(0,1);
 
-  //TODO: print patch name
-  lcd.print("TODO:PName");     
+  if(buttonPressed == Up)
+  {
+	  activeInstrument = MENU_NEXT(activeInstrument, MAX_PATCHES);
+  }
+  else if (buttonPressed == Down)
+  {
+	  activeInstrument = MENU_PREVIOUS(activeInstrument, MAX_PATCHES);
+  }
+
+  setActivePatch(activeInstrument);
+}
+
+/*  patchNumber: a number ranging from 1 to MAX_PATCHES
+ * 
+ */
+void RETROCADE::setActivePatch(byte patchNumber)
+{
+	//TODO: read off of SD Card.
+	if (patchNumber>=MAX_PATCHES) return;
+
+	activeInstrument = patchNumber; //a little redudant since we already set this in intrument joystick but it's called from the MIDI callbacks.
+	
+	//TODO: read off SD card
+	//(A, D, S, R), (Noise,Square,Sawtooth,Triangle) (PWM)
+ 
+	if (patchNumber == 0)
+	{
+	sid.V1.setInstrument(0,0,15,0,0,0,0,1,0);  
+	sid.V2.setInstrument(12,0,12,0,0,0,1,0,0);   
+	sid.V3.setInstrument(0,9,0,0,0,1,0,0,512);  
+	currentPatch.setMode(PATCH_MODE_UNISON);
+	}
+	else if (patchNumber == 1)
+	{
+	sid.V1.setInstrument(12,5,15,3,0,0,0,1,31); 
+	sid.V2.setInstrument(12,5,12,0,1,0,1,0,0); 
+	sid.V3.setInstrument(0,9,0,0,5,0,0,0,512);
+	currentPatch.setMode(PATCH_MODE_UNISON);
+	}
+	else if (patchNumber == 2)
+	{
+	sid.V1.setInstrument(0,   5,   5,  100, 0,1,1,1,   0);
+	sid.V2.setInstrument(0,  50,  27,  120, 0,1,1,1,   0); 
+	sid.V3.setInstrument(0,  48,  54,    8, 0,1,1,1, 128); 
+	currentPatch.setMode(PATCH_MODE_UNISON);
+	}
+	else if  (patchNumber == 3) //Flute
+	{
+	sid.V1.setInstrument(0,5,5,3,0,0,0,1,31); 
+	sid.V2.setInstrument(0,5,5,3,0,0,0,1,31); 
+	sid.V3.setInstrument(0,5,5,3,0,0,0,1,31); 
+	currentPatch.setMode(PATCH_MODE_POLY);
+	}
+	else if  (patchNumber ==4) //Carinet
+	{
+	sid.V1.setInstrument(3,9,0,3,0,1,0,1,256);  
+	sid.V2.setInstrument(3,9,0,3,0,1,0,1,256);  
+	sid.V3.setInstrument(3,9,0,3,0,1,0,1,256); 
+	currentPatch.setMode(PATCH_MODE_POLY);
+	}
+	else if  (patchNumber == 5) //Toy organ
+	{
+	sid.V1.setInstrument(101,10,15,0, 0,1,0,1,1110);  
+	sid.V2.setInstrument(101,10,15,0, 0,1,0,1,1110); 
+	sid.V3.setInstrument(101,10,15,0, 0,1,0,1,1110);  
+	currentPatch.setMode(PATCH_MODE_POLY);
+	}
+	else if  (patchNumber == 6) //Mellodian
+	{
+	sid.V1.setInstrument(3,5,5,0,0,1,1,1,32); 
+	sid.V2.setInstrument(3,5,5,0,0,1,1,1,32);  
+	sid.V3.setInstrument(3,5,15,0,0,1,1,1,32); 
+	currentPatch.setMode(PATCH_MODE_POLY);
+	}
+
+	if (MENU_INSTRUMENT == lcdMode)
+	{
+		byte data = currentPatch.getMode();
+
+		//render the LCD
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Program ");
+		lcd.print(patchNumber+1);
+
+		lcd.print(" ");
+ 		if (data==PATCH_MODE_POLY) lcd.print("P");
+		else if(data==PATCH_MODE_UNISON) lcd.print("U");
+		//else (mode==PATCH_MODE_SPLIT) lcd.print("Split") // not implemented yet
+
+		data = currentPatch.getPolyphony();
+		lcd.print(data);
+
+		lcd.setCursor(0,1);
+		lcd.print("TODO:PName"); 
+
+	}
 }
 
 void RETROCADE::smallfsModFileJoystick(byte type) 
@@ -495,11 +574,10 @@ void RETROCADE::spaceInvadersLCD(){
   Demo by JO3RI
   
   http://www.JO3RI.be/arduino/arduino-projects/lcd-16x2-demo
- 
-*/  
- 
-  /*
-  if (invadersTimer == 0 && lcdMode == WELCOME)
+ */
+
+#ifndef RETROCADE_EXTRA_LITE
+ if (invadersTimer == 0 && lcdMode == MENU_WELCOME)
   {
        if (invadersCurSeg == 10){
         lcd.clear();
@@ -679,7 +757,9 @@ void RETROCADE::spaceInvadersLCD(){
         default:
           lcd.print("oops");
           break;  
-      }  
-  }*/
+      }
+	}
+#endif
   
-  }
+  
+}

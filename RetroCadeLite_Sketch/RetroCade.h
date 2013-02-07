@@ -15,6 +15,7 @@
 #include <zpuino-types.h>
 #include <zpuino.h>
 #include "Arduino.h"
+ 
 #include "LiquidCrystal.h"
 #include <SD.h>
 #include "SmallFS.h"
@@ -23,6 +24,17 @@
 #include "SID.h"
 #include "YM2149.h"
 #include "Patch.h"
+
+//Defines for lcdMode / menu selection 
+#define MENU_WELCOME 0
+#define MENU_CHANNEL 1
+#define MENU_INSTRUMENT 2
+#define MENU_MODFILE 5
+#define MENU_SMALLFSMODFILE 6
+#define MENU_YMFILE 7
+#define MENU_SMALLFSYMFILE 8
+#define MENU_ABOUT 3
+#define LCDMODEMAX 4
 
 
 #define AUDIO_J1_L WING_B_1
@@ -81,6 +93,7 @@ class RETROCADE
    void setup();
    void setupMegaWing(); 
    void handleJoystick();
+   void setActivePatch(byte patchNum);
    void setTimeout();
    byte getActiveChannel();
    void printDirectory(File dir, int numTabs);
@@ -90,6 +103,8 @@ class RETROCADE
    void changePatch(int patcNum);
    void mainMenu();
    void spaceInvadersLCD();
+
+   void setLcdMode(byte lcdMode);
   private:
    void initSD();
   

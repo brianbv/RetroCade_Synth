@@ -11,7 +11,11 @@
 #ifndef LIB_SPACEINVADERS_H_
 #define LIB_SPACEINVADERS_H_
 
- #include "binary.h"
+#include "Config.h"
+
+#ifndef RETROCADE_EXTRA_LITE
+
+#include "binary.h"
 
 // set for space invader animation speed:
 int y=50;
@@ -301,5 +305,6 @@ byte charSP12b[8] = {
 // --MOVE STEP B END--
 // --END SPACE INVADER--
 
+#endif //RETROCADE_EXTRA_LITE
 
 #endif // LIB_SPACEINVADERS_H_

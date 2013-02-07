@@ -102,49 +102,9 @@ void HandleControlChange(byte channel, byte number, byte value) {
 void HandleProgramChange(byte channel, byte program)
 {
   Serial.println(program);
+  retrocade.setLcdMode(MENU_INSTRUMENT);
+  retrocade.setActivePatch(program);
 
-  if (program == 1)
-  {
-    retrocade.sid.V1.setInstrument(0,0,15,0,0,0,0,1,0); //Calliope
-    retrocade.sid.V2.setInstrument(12,0,12,0,0,0,1,0,0); //Accordian
-    retrocade.sid.V3.setInstrument(0,9,0,0,0,1,0,0,512); //Harpsicord
-    retrocade.currentPatch.setMode(PATCH_MODE_UNISON);
-  }
-  else if (program == 2)
-  {
-    retrocade.sid.V1.setInstrument(12,5,15,3,0,0,0,1,31); //Calliope
-    retrocade.sid.V2.setInstrument(12,5,12,0,1,0,1,0,0); //Accordian
-    retrocade.sid.V3.setInstrument(0,9,0,0,5,0,0,0,512); //Harpsicord
-    retrocade.currentPatch.setMode(PATCH_MODE_UNISON);
-  }
-   else if  (program == 3)
-  {
-    retrocade.sid.V1.setInstrument(12,5,15,3,0,0,0,1,31); //Calliope
-    retrocade.sid.V1.setInstrument(12,5,15,3,0,0,0,1,31); //Calliope
-    retrocade.sid.V1.setInstrument(12,5,15,3,0,0,0,1,31); //Calliope
-    retrocade.currentPatch.setMode(PATCH_MODE_POLY);
-  }
-   else if  (program == 4)
-  {
-     retrocade.sid.V3.setInstrument(3,9,0,3,0,1,0,1,256); //Harpsicord
-     retrocade.sid.V3.setInstrument(3,9,0,3,0,1,0,1,256); //Harpsicord
-    retrocade.sid.V3.setInstrument(3,9,0,3,0,1,0,1,256); //Harpsicord
-    retrocade.currentPatch.setMode(PATCH_MODE_POLY);
-  }
-   else if  (program == 5)
-  {
-    retrocade.sid.V1.setInstrument(101,10,15,0, 0,1,0,1,1110); //Calliope
-    retrocade.sid.V1.setInstrument(101,10,15,0, 0,1,0,1,1110); //Calliope
-    retrocade.sid.V1.setInstrument(101,10,15,0, 0,1,0,1,1110); //Calliope
-    retrocade.currentPatch.setMode(PATCH_MODE_POLY);
-  }
-   else if  (program == 6)
-  {
-    retrocade.sid.V1.setInstrument(3,5,5,0,0,1,1,1,32); //Calliope
-    retrocade.sid.V1.setInstrument(3,5,5,0,0,1,1,1,32); //Calliope
-    retrocade.sid.V1.setInstrument(3,5,15,0,0,1,1,1,32); //Calliope
-    retrocade.currentPatch.setMode(PATCH_MODE_POLY);
-  }
 }
 
 void HandlePitchBend(byte channel, int bend) { 

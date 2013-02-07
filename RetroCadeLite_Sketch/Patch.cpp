@@ -10,12 +10,25 @@
 
 #include "Patch.h"
 
-
-
-
-
+ 
    void Patch::setParameter(byte number, byte value){}  //internal parameter number
-   
+
+   void Patch::reset()
+   {
+	   availableVoiceQueue.clear();
+	   activeVoiceQueue.clear();
+
+	   for (int i=0;i<MAX_POLYPHONY;i++)
+	   {
+		   voiceItems[i].voice= NULL;
+	   }
+   }
+
+   void Patch::setName(const char* name)
+   {
+	   strcpy(instrumentName,name);
+   }
+
    void Patch::setVoices(Voice* v1, Voice* v2, Voice* v3)
    {
 		polyphony=0;
@@ -36,7 +49,11 @@
    }
    
  
-   void Patch::setMode(int mode)
+   byte Patch::getMode() { return patchMode; }
+
+   byte Patch::getPolyphony() {return polyphony; } 
+
+   void Patch::setMode(byte mode)
    {
 		patchMode=mode;
 		
@@ -190,6 +207,9 @@
 	 
    }
    
+   /*
+    *  returns true if any notes are active
+	*/
    bool Patch::notesActive()
    {
 		return   noteState[2]==0 ||
@@ -198,7 +218,9 @@
 				 noteState[0]==0;
    }
  
-   
+   /*
+    *  
+	*/
    void Patch::setNoteUnison(int note, boolean active)
    {    
    

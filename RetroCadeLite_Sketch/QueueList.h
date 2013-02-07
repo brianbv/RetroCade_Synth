@@ -158,7 +158,7 @@ void QueueList<T>::push (const T i) {
   // if there is a memory allocation error.
   if (tail == NULL) 
   {
-	  Serial.println("!!!!!!!!!!! OH NOE !!!!!!!!!!!");
+	  
 	  return;
   }
 
@@ -231,6 +231,8 @@ T QueueList<T>::peekCurrent () {
 template<typename T>
 void QueueList<T>::dumpList () 
 {
+	#if DEBUG
+
 	Serial.println();
 	Serial.print("QueueList (0x");
 	Serial.print((int) this, HEX);
@@ -263,6 +265,7 @@ void QueueList<T>::dumpList ()
 
 	Serial.println("\n\n");
 
+	#endif
 }
 
 template<typename T>
