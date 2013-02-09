@@ -17,11 +17,17 @@
    {
 	   availableVoiceQueue.clear();
 	   activeVoiceQueue.clear();
+	   activeNoteStack.clear();
 
 	   for (int i=0;i<MAX_POLYPHONY;i++)
 	   {
 		   voiceItems[i].voice= NULL;
 	   }
+   }
+
+   char* Patch::getName()
+   {
+	   return instrumentName;
    }
 
    void Patch::setName(const char* name)
@@ -82,7 +88,8 @@
 			return;
 				
 		setNoteState(note,active);			
-	  
+
+
 		switch(patchMode)
 		{
 			case PATCH_MODE_POLY: 
@@ -96,9 +103,8 @@
 			case PATCH_MODE_UNISON:
 			default:
 				setNoteUnison(note,active);
-		}
-		
-		
+		}	
+ 
 		//TODO: this singature is wrong.  it's causing a crash
 		//(this->*_setNote)(note,active); 
    }   
@@ -141,9 +147,6 @@
    {
 		VoiceItem* currentVoice = NULL;
 		
-		//Serial.println("\nsetNotePoly()");
-		//activeVoiceQueue.dumpList();
-
 		if (active && activeVoiceQueue.count() == polyphony)
 		{
 			//take swaps the first and last items
@@ -179,30 +182,17 @@
 			}
 			while( activeVoiceQueue.next() );
  
-			//Serial.println("== AFTER ==");
-			//activeVoiceQueue.dumpList();
- 
 		}
 		else
 		{
-			Serial.println("[ NOTE OFF CALLED: NO ACTIVE VOICES]");
+			//Serial.println("[ NOTE OFF CALLED: NO ACTIVE VOICES]");
 		}
 
-
-		//activeVoiceQueue.dumpList();
-		//Serial.print("Active\tNonactive: ");
-		//Serial.println("---\t---");
-		//Serial.print(activeVoiceQueue.count());
-		//Serial.print('\t');
-		//Serial.print(availableVoiceQueue.count());
-		//Serial.println("\n");
 
 		if (NULL!=currentVoice)
 		{
 			currentVoice->note = note;
 			currentVoice->voice->setNote(note,active);
-			//Serial.print("-- finished set note:");
-			//Serial.println(currentVoice->note);
 		}
 	 
    }
@@ -212,33 +202,50 @@
 	*/
    bool Patch::notesActive()
    {
-		return   noteState[2]==0 ||
-				 noteState[1]==0 ||
-				 noteState[3]==0 ||
-				 noteState[0]==0;
+		return   noteState[2]!=0 ||
+				 noteState[1]!=0 ||
+				 noteState[3]!=0 ||
+				 noteState[0]!=0;
    }
  
    /*
     *  
 	*/
-   void Patch::setNoteUnison(int note, boolean active)
+   void Patch::setNoteUnison(int note, bool active)
    {    
-   
-   		if (active || 
-		    (!active &&  noteState[2]==0 &&
-						 noteState[1]==0 &&
-						 noteState[3]==0 &&
-						 noteState[0]==0))
+		bool anyNotesActive = notesActive();
+
+
+		if (active)
 		{
-	 
-   
-			for(byte i=0;i<polyphony;i++)
+			setVoiceState(note,active);
+			activeNoteStack.pushHead(note);
+		}
+		else
+		{
+			activeNoteStack.popValue(note);
+
+			if (!anyNotesActive)
 			{
-				voiceItems[i].active=active;
-				voiceItems[i].voice->setNote(note,active);
+				setVoiceState(note,active);
+			}
+			else //if (!previousNoteState)
+			{
+				note = activeNoteStack.peek();
+				active= true;
+				setVoiceState(note,active);
 			}
 		}
+ 
    }
-  
 
+  
+   void Patch::setVoiceState(int note,bool active)
+   {
+	   	for(byte i=0;i<polyphony;i++)
+		{
+			voiceItems[i].active=active;
+			voiceItems[i].voice->setNote(note,active);
+		}
+   }
  

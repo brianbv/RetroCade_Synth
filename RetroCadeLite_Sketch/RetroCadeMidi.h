@@ -9,6 +9,7 @@
  */
 
 #include "MIDI.h"
+#include "Config.h"
 
 RETROCADE retrocade;
 
@@ -123,11 +124,23 @@ void HandlePitchBend(byte channel, int bend) {
 
 void HandleNoteOn(byte channel, byte pitch, byte velocity) 
 {
+	//this doesn't really seem like the "right" way to do this.
+	//there should be a defacto if not standard way of starting/stopping sequenes.  Possibly MMC
+	//http://en.wikipedia.org/wiki/MIDI_Machine_Control
+
+	#ifndef RETROCADE_LITE
+		if (channel==7)  retrocade.modplayer.play(true);
+	#endif
+
 	retrocade.currentPatch.setNote(pitch,true);
 }
 
 void HandleNoteOff(byte channel, byte pitch, byte velocity) 
 {
+	#ifndef RETROCADE_LITE
+		if (channel==7)  retrocade.modplayer.play(false);
+	#endif
+
 	retrocade.currentPatch.setNote(pitch,false);
 }
 

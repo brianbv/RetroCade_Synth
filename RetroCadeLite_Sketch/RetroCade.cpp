@@ -367,50 +367,49 @@ void RETROCADE::setActivePatch(byte patchNumber)
 	//TODO: read off SD card
 	//(A, D, S, R), (Noise,Square,Sawtooth,Triangle) (PWM)
  
-	if (patchNumber == 0)
+	if (patchNumber == 0)  //Toy Piano
 	{
+	currentPatch.setName("Toy Piano");
 	sid.V1.setInstrument(0,0,15,0,0,0,0,1,0);  
 	sid.V2.setInstrument(12,0,12,0,0,0,1,0,0);   
 	sid.V3.setInstrument(0,9,0,0,0,1,0,0,512);  
 	currentPatch.setMode(PATCH_MODE_UNISON);
 	}
-	else if (patchNumber == 1)
+	else if (patchNumber == 1) //Basic Synth
 	{
+	currentPatch.setName("SID Synth");
 	sid.V1.setInstrument(12,5,15,3,0,0,0,1,31); 
 	sid.V2.setInstrument(12,5,12,0,1,0,1,0,0); 
 	sid.V3.setInstrument(0,9,0,0,5,0,0,0,512);
 	currentPatch.setMode(PATCH_MODE_UNISON);
 	}
-	else if (patchNumber == 2)
+	else if  (patchNumber == 2) //Flute
 	{
-	sid.V1.setInstrument(0,   5,   5,  100, 0,1,1,1,   0);
-	sid.V2.setInstrument(0,  50,  27,  120, 0,1,1,1,   0); 
-	sid.V3.setInstrument(0,  48,  54,    8, 0,1,1,1, 128); 
-	currentPatch.setMode(PATCH_MODE_UNISON);
-	}
-	else if  (patchNumber == 3) //Flute
-	{
+	currentPatch.setName("Flute");
 	sid.V1.setInstrument(0,5,5,3,0,0,0,1,31); 
 	sid.V2.setInstrument(0,5,5,3,0,0,0,1,31); 
 	sid.V3.setInstrument(0,5,5,3,0,0,0,1,31); 
 	currentPatch.setMode(PATCH_MODE_POLY);
 	}
-	else if  (patchNumber ==4) //Carinet
+	else if  (patchNumber ==3) //Carinet
 	{
+	currentPatch.setName("Clarinet");
 	sid.V1.setInstrument(3,9,0,3,0,1,0,1,256);  
 	sid.V2.setInstrument(3,9,0,3,0,1,0,1,256);  
 	sid.V3.setInstrument(3,9,0,3,0,1,0,1,256); 
 	currentPatch.setMode(PATCH_MODE_POLY);
 	}
-	else if  (patchNumber == 5) //Toy organ
+	else if  (patchNumber == 4) //Toy organ
 	{
+	currentPatch.setName("Toy Organ");
 	sid.V1.setInstrument(101,10,15,0, 0,1,0,1,1110);  
 	sid.V2.setInstrument(101,10,15,0, 0,1,0,1,1110); 
 	sid.V3.setInstrument(101,10,15,0, 0,1,0,1,1110);  
 	currentPatch.setMode(PATCH_MODE_POLY);
 	}
-	else if  (patchNumber == 6) //Mellodian
+	else if  (patchNumber == 5) //Mellodian
 	{
+	currentPatch.setName("Mellodian");
 	sid.V1.setInstrument(3,5,5,0,0,1,1,1,32); 
 	sid.V2.setInstrument(3,5,5,0,0,1,1,1,32);  
 	sid.V3.setInstrument(3,5,15,0,0,1,1,1,32); 
@@ -436,8 +435,8 @@ void RETROCADE::setActivePatch(byte patchNumber)
 		lcd.print(data);
 
 		lcd.setCursor(0,1);
-		lcd.print("TODO:PName"); 
-
+		lcd.print( currentPatch.getName() ); //TODO: print name here
+		///lcd.print(
 	}
 }
 

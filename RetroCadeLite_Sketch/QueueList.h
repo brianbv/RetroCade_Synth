@@ -41,7 +41,12 @@
  *  For the latest version see: http://www.arduino.cc/
  */
  
- 
+ /* RetroCade Modifications (Brian Vogel):
+  *      
+  * added functionality for iteration, removing items, clearing the entire list and methods so queuelist could be used as a stack.  
+  * 
+  *  there seems to be some instability surrouding the dynamic memory allocations.
+  */
 
 // header defining the interface of the source.
 #ifndef _QUEUELIST_H
@@ -49,6 +54,7 @@
 
 // include Arduino basic header.
 #include <Arduino.h>
+#include "Config.h"
 
 	static unsigned int allocs;
 	static int deallocs;
@@ -69,12 +75,14 @@ class QueueList {
 
     // push an item to the queue.
     void push (const T i);
-
+	void pushHead (const T i);
 	void clear();
 
     // pop an item from the queue.
     T pop ();
-	
+
+	bool popValue (T value);
+
 	//swaps the first and last items
 	T swap();
 
@@ -141,13 +149,11 @@ void QueueList<T>::clear()
   tail = NULL;    // set the tail of the list to point nowhere.
 }
 
+
 // push an item to the queue.
 template<typename T>
 void QueueList<T>::push (const T i) {
 
-
-
-  // create a temporary pointer to tail.
   link t = tail;
 
   // create a new node for the tail.
@@ -156,11 +162,7 @@ void QueueList<T>::push (const T i) {
   allocs++;
 
   // if there is a memory allocation error.
-  if (tail == NULL) 
-  {
-	  
-	  return;
-  }
+  if (tail == NULL)  return;
 
   tail->next = NULL;
   tail->item = i;
@@ -176,8 +178,27 @@ void QueueList<T>::push (const T i) {
   // increase the items.
   size++;
 
+}
 
+template<typename T>
+void QueueList<T>::pushHead (const T i) 
+{
+  link newNode = (link) new node;
+  allocs++;
 
+  if (newNode == NULL)    //possible memory allocation error
+	  return;  
+
+  newNode->next = head;
+  newNode->item = i;
+  head = newNode;
+   
+  if (isEmpty() )
+  {
+    tail = head;
+  }
+ 
+  size++;
 }
 
 template<typename T>
@@ -193,7 +214,6 @@ bool QueueList<T>::next () {
   
   bool result = true;
   
- 
 
   if (size<=1) 
   {
@@ -231,7 +251,7 @@ T QueueList<T>::peekCurrent () {
 template<typename T>
 void QueueList<T>::dumpList () 
 {
-	#if DEBUG
+	#ifdef DEBUG
 
 	Serial.println();
 	Serial.print("QueueList (0x");
@@ -254,19 +274,37 @@ void QueueList<T>::dumpList ()
 	Serial.println(size);
 	Serial.println("\tItems:");
 
-	link fun = head;
+	link value = head;
 
 	do
 	{
 		Serial.print("\t");
-		Serial.println((int)fun,HEX);
-		fun= fun->next;
-	} while(fun!=NULL);
+		Serial.println((int)value,HEX);
+		value= value->next;
+	} while(value!=NULL);
 
 	Serial.println("\n\n");
 
 	#endif
 }
+
+template<typename T>
+bool QueueList<T>::popValue (T value)
+{
+	T result;
+	start();
+
+	do
+	{
+	    if (value == iterator->item)
+		{
+			result=popCurrent();
+		}
+	} while(next());
+
+	return result==value;
+}
+
 
 template<typename T>
 T QueueList<T>::popCurrent () 

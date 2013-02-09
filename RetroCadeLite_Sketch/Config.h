@@ -5,7 +5,7 @@
 //#define DEBUG
 
 //Retrocade Version
-//#define RETROCADE_EXTRA_LITE
+#define RETROCADE_EXTRA_LITE
 #define RETROCADE_LITE
 
 #endif
