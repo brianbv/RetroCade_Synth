@@ -20,11 +20,15 @@ class Voice
 {
   public:
    virtual void setNote(int note, boolean active);
+   virtual int getNote();
    virtual void setFreq(int freq);
    virtual void setNoise(boolean active);
    virtual void handleCC(byte number, byte value);
    virtual int getCurrentFreq();
    virtual void handlePitchBend(int bend);
+
+ protected:
+	int note;
 };
 
 #endif

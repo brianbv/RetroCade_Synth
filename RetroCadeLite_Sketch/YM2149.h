@@ -31,11 +31,12 @@
 #define YM2149BASE IO_SLOT(13)
 #define YM2149REG(x) REGISTER(YM2149BASE,x)  
 
-class YMVoice : Voice
+class YMVoice : public Voice
 { 
   public:
     void setBase(int freqAddress, int volumeAddress);
     void setNote(int note, boolean active);
+	int getNote();
     void setFreq(int freq);
     void setVolume(byte volume);
     void setEnvelope(boolean active);

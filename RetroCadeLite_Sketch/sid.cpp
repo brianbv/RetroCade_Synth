@@ -108,10 +108,16 @@ void SIDVoice::reset()
 
 void SIDVoice::setNote(int note, boolean active)
 {
+  this->note=note;
   SID::writeData(SID_ADDR_FREQ_LOW, SID::MIDI2freq[note]);
   SID::writeData(SID_ADDR_FREQ_HI, (SID::MIDI2freq[note] >> 8)); 
   setGate(active); 
   currentFreq = SID::MIDI2freq[note];
+}
+
+int SIDVoice::getNote()
+{
+	return this->note;
 }
 
 void SIDVoice::setFreq(int freq)

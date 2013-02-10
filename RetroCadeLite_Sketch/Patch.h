@@ -12,6 +12,7 @@
 #define LIB_Patch_H_
 
 #include "Voice.h"
+#include "ListBase.h"
 #include "QueueList.h"
 
 #define PATCH_MODE_UNISON 0x00
@@ -19,14 +20,6 @@
 #define PATCH_MODE_SPLIT 0x02
 
 #define MAX_POLYPHONY 3
-
- 
-struct VoiceItem
-{
-  Voice* voice;
-  bool active;
-  short note;
-};
 
 //typedef  int (Patch::*FredMemFn)(int i, double d);
 
@@ -64,12 +57,10 @@ protected:
    byte polyphony;          //current voice polyphony
    uint32_t noteState[4];   //a table of bits indicating the state of notes 0-127
    
-   VoiceItem voiceItems[MAX_POLYPHONY];    //available voices
- 
+   ListNode<Voice*> availableVoices[MAX_POLYPHONY]; //available voices
+
    QueueList<int> activeNoteStack;
-   QueueList<VoiceItem*> activeVoiceQueue;
-   QueueList<VoiceItem*> availableVoiceQueue;
-   
+   QueueList<Voice*> voiceQueue;
    
    NoteHandler _setNote;
    IntHandler _setPitchBend;

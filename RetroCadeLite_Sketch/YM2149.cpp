@@ -59,9 +59,15 @@ void YMVoice::setBase(int freqAddress, int volumeAddress)
 void YMVoice::setNote(int note, boolean active)
 {
   //setTone(active);
+  this->note=note;
   YM2149::writeData(YM_ADDR_FREQ, YM2149::MIDI2freq[note]);
   YM2149::writeData(YM_ADDR_FREQ+1, (YM2149::MIDI2freq[note] >> 8));
   currentFreq = YM2149::MIDI2freq[note];
+}
+
+int YMVoice::getNote()
+{
+	return this->note;
 }
 
 void YMVoice::setFreq(int freq)

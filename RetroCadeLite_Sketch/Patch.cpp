@@ -15,13 +15,17 @@
 
    void Patch::reset()
    {
-	   availableVoiceQueue.clear();
-	   activeVoiceQueue.clear();
+	   voiceQueue.clear();
+
+	   ListNode<Voice*>* voiceList = availableVoices;
+
+	   voiceQueue.setPool(voiceList, MAX_POLYPHONY);
+
 	   activeNoteStack.clear();
 
 	   for (int i=0;i<MAX_POLYPHONY;i++)
 	   {
-		   voiceItems[i].voice= NULL;
+		   availableVoices[i].value = NULL;
 	   }
    }
 
@@ -46,11 +50,7 @@
    
    void Patch::addVoice(Voice* voice)
    {
-		voiceItems[polyphony].voice= voice;
-		voiceItems[polyphony].active= false;
-		voiceItems[polyphony].note = -1;
-		
-		availableVoiceQueue.push( &voiceItems[polyphony] );
+		availableVoices[polyphony].value = voice;	
 		polyphony++;		
    }
    
@@ -113,7 +113,7 @@
    {
 		for(byte i=0;i<polyphony;i++)
 		{
-			voiceItems[i].voice->handlePitchBend(bendRange);
+			availableVoices[i].value->handlePitchBend(bendRange);
 		}
    }
    
@@ -145,55 +145,53 @@
    
    void Patch::setNotePoly(int note, boolean active)
    {
-		VoiceItem* currentVoice = NULL;
-		
-		if (active && activeVoiceQueue.count() == polyphony)
-		{
-			//take swaps the first and last items
-			currentVoice=activeVoiceQueue.swap();
-		}
-		else if (active)
-		{
-		    currentVoice = availableVoiceQueue.pop();
-		    activeVoiceQueue.push(currentVoice);
-		}
-		else if (activeVoiceQueue.count() > 0)
-		{
-		 
-			activeVoiceQueue.start();	
+		//Voice* currentVoice = NULL;
+		//
+		//if (active && voiceQueue.count() == polyphony)
+		//{
+		//	//take swaps the first and last items
+		//	currentVoice=voiceQueue.swap();
+		//}
+		//else if (active)
+		//{
+		//	//Ok...
+		//    //currentVoice=voiceQueue.push();
+		//}
+		//else if (voiceQueue.count() > 0)
+		//{
+		// 
+		//	voiceQueue.start();	
 
-			do
-			{
-			    //activeVoiceQueue.dumpList();
-				currentVoice = activeVoiceQueue.peekCurrent();
-					
-				if (NULL!=currentVoice && currentVoice->note == note)
-				{
-					activeVoiceQueue.popCurrent();
-					availableVoiceQueue.push(currentVoice);
-					break;
-				}
-				else if (NULL==currentVoice)
-				{
-					break;
-				}
+		//	do
+		//	{
+		//	    //voiceQueue.dumpList();
+		//		currentVoice = voiceQueue.peekCurrent();
+		//			
+		//		if (NULL!=currentVoice && currentVoice->getNote() == note)
+		//		{
+		//			voiceQueue.popCurrent();
+		//			break;
+		//		}
+		//		else if (NULL==currentVoice)
+		//		{
+		//			break;
+		//		}
  
-			
-			}
-			while( activeVoiceQueue.next() );
+		//	
+		//	}
+		//	while( voiceQueue.next() );
  
-		}
-		else
-		{
-			//Serial.println("[ NOTE OFF CALLED: NO ACTIVE VOICES]");
-		}
+		//}
+		//else
+		//{
+		//	//Serial.println("[ NOTE OFF CALLED: NO ACTIVE VOICES]");
+		//}
 
 
-		if (NULL!=currentVoice)
-		{
-			currentVoice->note = note;
-			currentVoice->voice->setNote(note,active);
-		}
+		//if (NULL!=currentVoice)
+		//{
+		//	currentVoice->setNote(note,active);
+		//}
 	 
    }
    
@@ -212,30 +210,33 @@
     *  
 	*/
    void Patch::setNoteUnison(int note, bool active)
-   {    
-		bool anyNotesActive = notesActive();
+   {   
+	 
+		//bool anyNotesActive = notesActive();
 
 
-		if (active)
-		{
-			setVoiceState(note,active);
-			activeNoteStack.pushHead(note);
-		}
-		else
-		{
-			activeNoteStack.popValue(note);
+		//if (active)
+		//{
+		//	setVoiceState(note,active);
+		//	activeNoteStack.pushHead(note);
+		//}
+		//else
+		//{
+		//	activeNoteStack.popValue(note);
 
-			if (!anyNotesActive)
-			{
-				setVoiceState(note,active);
-			}
-			else //if (!previousNoteState)
-			{
-				note = activeNoteStack.peek();
-				active= true;
-				setVoiceState(note,active);
-			}
-		}
+		//	if (!anyNotesActive)
+		//	{
+		//		setVoiceState(note,active);
+		//	}
+		//	else //if (!previousNoteState)
+		//	{
+		//		note = activeNoteStack.peek();
+		//		active= true;
+		//		setVoiceState(note,active);
+		//	}
+		//}
+
+		 
  
    }
 
@@ -244,8 +245,7 @@
    {
 	   	for(byte i=0;i<polyphony;i++)
 		{
-			voiceItems[i].active=active;
-			voiceItems[i].voice->setNote(note,active);
+			availableVoices[i].value->setNote(note,active);
 		}
    }
  

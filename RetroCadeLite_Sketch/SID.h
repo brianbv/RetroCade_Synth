@@ -38,6 +38,7 @@ class SIDVoice : public Voice
     SIDVoice(int address);
     void setBase(int address);   
     void setNote(int note, boolean active);
+	int getNote();
     void setFreq(int freq);
     void setPWLo(byte dutyCycle); 
     void setPWHi(byte dutyCycle);    

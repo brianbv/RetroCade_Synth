@@ -1,74 +1,47 @@
-/*
- *  QueueList.h
+/*!
+ *  @file		QueueStack.h
+ *  Project		RetroCade
+ *	@brief		Pool based Linked List implementation
+ *	Version		1.0
+ *  @author		Brian Vogel
+ *	@date		2/10/2013
+ *  License		GPL
  *
- *  Library implementing a generic, dynamic queue (linked list version).
- *
- *  ---
- *
- *  Copyright (C) 2010  Efstathios Chatzikyriakidis (contact@efxa.org)
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *  ---
- *
- *  Version 1.0
- *
- *    2010-09-28  Efstathios Chatzikyriakidis  <contact@efxa.org>
- *
- *      - added exit(), blink(): error reporting and handling methods.
- *
- *    2010-09-25  Alexander Brevig  <alexanderbrevig@gmail.com>
- *
- *      - added setPrinter(): indirectly reference a Serial object.
- *
- *    2010-09-20  Efstathios Chatzikyriakidis  <contact@efxa.org>
- *
- *      - initial release of the library.
- *
- *  ---
  */
- 
- /* RetroCade Modifications (Brian Vogel):
-  *      
-  * added functionality for iteration, removing values, clearing the entire list and methods so queuelist could be used as a stack.  
-  * 
-  *  there seems to be some instability surrouding the dynamic memory allocations.
-  */
-
-// header defining the interface of the source.
-#ifndef _QUEUELIST_H
-#define _QUEUELIST_H
+#ifndef _QueueStack_H
+#define _QueueStack_H
 
 // include Arduino basic header.
 #include <Arduino.h>
 #include "Config.h"
-#include "ListBase.h"
-  
+
+ 
+ 
+template<typename T> struct ListNode
+{
+	T value;      // the item in the node.
+    ListNode* next; // the next node in the list.
+};
 
 template<typename T>
-class QueueList : public ListBase<T> {
+class QueueStack {
+	public:
+	
+	QueueStack();
+	//~QueueStack();
 
-  public:
-	//list
+	void clear();
+	int count () const;
+    bool isEmpty () const;
+
+	//list management
+	T push (); //add an item to the list from the pool
+	void push (const T value); //add an item 
 	void pushHead (const T  value);
-	//void push(const T value);
-	T push();
-
-    T pop (); //removes and returns the head value
-	bool popValue (T value);
+	
+		bool popValue (T value);
 	T swap();  //swaps the first and last value
-    T peek () const; //returns the head value
+    T peek () const; //returns the head val
 
 	//iteration
 	T peekNext() ;
@@ -77,15 +50,102 @@ class QueueList : public ListBase<T> {
 	bool next ();
 	void start();
 	void dumpList();
+	
+	//memory pooling
+	void setPool(ListNode<T>* poolData,int poolSize);
 
-  protected:
+	protected:
 	void push (ListNode<T>*  nextNode);
 	void pushHead (ListNode<T>*  nextNode);
-	 
-  private:
+	
+	//iteration
 	ListNode<T>* iterator;   
 	ListNode<T>* previous;
+
+	//list management
+	ListNode<T>* head;       // the head of the list.
+    ListNode<T>* tail;       // the tail of the list.
+	int size;				 //item count   
+
+    //memory pooling
+	ListNode<T>* getNode();
+	void releaseNode(ListNode<T>* releaseNode);
+	ListNode<T>* pool;
+	int poolMaxSize;
+	int poolIndex;
+
+
+
 };
+
+template<typename T>
+QueueStack<T>::QueueStack()
+{
+	clear();
+}
+ 
+ 
+template<typename T>
+ListNode<T>* QueueStack<T>::getNode()
+{
+	ListNode<T>* result = NULL;
+
+	//ListNode<T>* result = pool[poolIndex];
+	//pool[poolIndex]=NULL;
+
+	// don't let it go over
+	if (++poolIndex>=poolMaxSize)
+		poolIndex=poolMaxSize=1;
+
+	return result;
+}
+
+template<typename T>
+void QueueStack<T>::clear()
+{
+  size = 0; 
+  head = NULL;  
+  tail = NULL; 
+}
+
+template<typename T>
+void QueueStack<T>::releaseNode(ListNode<T>* releaseNode)
+{
+	 //pool[poolIndex] = releaseNode;
+
+	// don't let it go over
+	if (--poolIndex<0)
+		poolIndex=0;
+}
+
+// check if the queue is empty.
+template<typename T>
+bool QueueStack<T>::isEmpty () const {
+  return head == NULL;
+}
+
+// get the number of items in the queue.
+template<typename T>
+int QueueStack<T>::count () const {
+  return size;
+}
+
+
+template<typename T>
+T QueueStack<T>::push() 
+{
+	ListNode<T>*  poolItem = (ListNode<T>*) getNode();
+	this->push(poolItem);
+	return poolItem->value;
+}
+
+template<typename T>
+void QueueStack<T>::push (const T value)
+{
+	ListNode<T>* poolItem =  getNode();
+	poolItem->value = value;
+	this->push(poolItem);
+}
 
 
 // push an value to the tail of the queue
@@ -320,6 +380,4 @@ T QueueList<T>::peek () const
 
 
 
- 
-
-#endif // _QUEUELIST_H
+#endif

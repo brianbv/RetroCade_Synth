@@ -7,10 +7,5 @@
  *	@date		2/1/13
  *  License		GPL
  */
- 
- class Voice
- {
-   
- };
- 
+
  
