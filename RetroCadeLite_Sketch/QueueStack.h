@@ -1,7 +1,7 @@
 /*!
  *  @file		QueueStack.h
  *  Project		RetroCade
- *	@brief		Pool based Linked List implementation
+ *	@brief		Pool based Queue/Stack implementation
  *	Version		1.0
  *  @author		Brian Vogel
  *	@date		2/10/2013
@@ -32,14 +32,16 @@ class QueueStack {
 
 	void clear();
 	int count () const;
-    bool isEmpty () const;
 
 	//list management
 	T push (); //add an item to the list from the pool
 	void push (const T value); //add an item 
 	void pushHead (const T  value);
+	bool popTail ();
 	
-		bool popValue (T value);
+
+	T pop();
+	bool popValue (T value);
 	T swap();  //swaps the first and last value
     T peek () const; //returns the head val
 
@@ -52,7 +54,7 @@ class QueueStack {
 	void dumpList();
 	
 	//memory pooling
-	void setPool(ListNode<T>* poolData,int poolSize);
+	void setPool(ListNode<T>** poolData,int poolSize);
 
 	protected:
 	void push (ListNode<T>*  nextNode);
@@ -65,12 +67,13 @@ class QueueStack {
 	//list management
 	ListNode<T>* head;       // the head of the list.
     ListNode<T>* tail;       // the tail of the list.
+
 	int size;				 //item count   
 
     //memory pooling
 	ListNode<T>* getNode();
 	void releaseNode(ListNode<T>* releaseNode);
-	ListNode<T>* pool;
+	ListNode<T>** pool;
 	int poolMaxSize;
 	int poolIndex;
 
@@ -84,22 +87,6 @@ QueueStack<T>::QueueStack()
 	clear();
 }
  
- 
-template<typename T>
-ListNode<T>* QueueStack<T>::getNode()
-{
-	ListNode<T>* result = NULL;
-
-	//ListNode<T>* result = pool[poolIndex];
-	//pool[poolIndex]=NULL;
-
-	// don't let it go over
-	if (++poolIndex>=poolMaxSize)
-		poolIndex=poolMaxSize=1;
-
-	return result;
-}
-
 template<typename T>
 void QueueStack<T>::clear()
 {
@@ -109,20 +96,30 @@ void QueueStack<T>::clear()
 }
 
 template<typename T>
+void QueueStack<T>::setPool(ListNode<T>** pool,int size)
+{
+	this->poolMaxSize=size;
+	this->pool = pool;
+	this->poolIndex = 0;
+}
+ 
+template<typename T>
+ListNode<T>* QueueStack<T>::getNode()
+{
+	ListNode<T>* result = (poolIndex>=poolMaxSize) ? pool[poolMaxSize-1] : pool[poolIndex];   
+	++poolIndex;
+	return result;
+}
+
+
+template<typename T>
 void QueueStack<T>::releaseNode(ListNode<T>* releaseNode)
 {
-	 //pool[poolIndex] = releaseNode;
-
-	// don't let it go over
-	if (--poolIndex<0)
-		poolIndex=0;
+	--poolIndex;
+	pool[poolIndex] = releaseNode;
 }
 
-// check if the queue is empty.
-template<typename T>
-bool QueueStack<T>::isEmpty () const {
-  return head == NULL;
-}
+ 
 
 // get the number of items in the queue.
 template<typename T>
@@ -150,7 +147,7 @@ void QueueStack<T>::push (const T value)
 
 // push an value to the tail of the queue
 template<typename T>
-void QueueList<T>::push (ListNode<T>*  nextNode) 
+void QueueStack<T>::push (ListNode<T>*  nextNode) 
 {
   ListNode<T>* t = this->tail;
 
@@ -168,7 +165,7 @@ void QueueList<T>::push (ListNode<T>*  nextNode)
 }
 
 template<typename T>
-void QueueList<T>::pushHead (const T value) 
+void QueueStack<T>::pushHead (const T value) 
 {
 	ListNode<T>* poolvalue =  this->getNode();
 	poolvalue->value = value;
@@ -176,7 +173,7 @@ void QueueList<T>::pushHead (const T value)
 }
 
 template<typename T>
-void QueueList<T>::pushHead (ListNode<T>*  newNode) 
+void QueueStack<T>::pushHead (ListNode<T>*  newNode) 
 {
   newNode->next = this->head;
   this->head = newNode;
@@ -188,13 +185,13 @@ void QueueList<T>::pushHead (ListNode<T>*  newNode)
 
 
 template<typename T>
-void QueueList<T>::start() {
+void QueueStack<T>::start() {
 	iterator = this->head;
 }
 
 // pop an value from the queue.
 template<typename T>
-bool QueueList<T>::next () {
+bool QueueStack<T>::next () {
   
   bool result = true;
   
@@ -217,7 +214,7 @@ bool QueueList<T>::next () {
 }
 
 template<typename T>
-T QueueList<T>::peekNext () {
+T QueueStack<T>::peekNext () {
 
 	if (NULL!=iterator && 
 	    NULL !=iterator->next)
@@ -227,16 +224,13 @@ T QueueList<T>::peekNext () {
 }
 
 template<typename T>
-T QueueList<T>::peekCurrent () {
+T QueueStack<T>::peekCurrent () {
 	return iterator->value;
 }
 
 template<typename T>
-T QueueList<T>::popCurrent () 
+T QueueStack<T>::popCurrent () 
 {
-	//Serial.println("popCurrent () ");
-	//dumpList();
-
 	T result = NULL;
 
 	//unlink the current node
@@ -252,35 +246,29 @@ T QueueList<T>::popCurrent ()
 		{
 			this->tail=previous;
 			this->tail->next = NULL;
-			//Serial.println("iterator==tail");
 		}
 		else if (NULL!=previous)
 		{
 			previous->next = iterator->next;
-			//Serial.println("(NULL!=previous)");
-
 		}
 
 		this->releaseNode(iterator);
 		iterator = NULL;
 		previous = NULL;
 		this->size--;
-		//Serial.println("-- stuff is reset now --");
 	}
 
-	//dumpList();
- 
 	return result;
 }
 
 
 template<typename T>
-void QueueList<T>::dumpList () 
+void QueueStack<T>::dumpList () 
 {
 	#ifdef DEBUG
 
 	Serial.println();
-	Serial.print("QueueList (0x");
+	Serial.print("QueueStack (0x");
 	Serial.print((int) this, HEX);
 	Serial.print(") - ");
 	Serial.print(allocs);
@@ -315,7 +303,7 @@ void QueueList<T>::dumpList ()
 }
 
 template<typename T>
-bool QueueList<T>::popValue (T value)
+bool QueueStack<T>::popValue (T value)
 {
 	T result;
 	start();
@@ -325,16 +313,32 @@ bool QueueList<T>::popValue (T value)
 	    if (value == iterator->value)
 		{
 			result=popCurrent();
+			break;
 		}
 	} while(next());
 
 	return result==value;
 }
 
+template<typename T>
+bool QueueStack<T>::popTail ()
+{
+	start();
 
+	do
+	{
+	    if (iterator==tail)
+		{
+			popCurrent();
+			break;
+		}
+	} while(next());
+
+	return iterator==tail;
+}
 
 template<typename T>
-T QueueList<T>::swap()
+T QueueStack<T>::swap()
 {
 	  //unlink the head and make the 2nd node the head
 	  ListNode<T>* node = this->head;  
@@ -345,34 +349,28 @@ T QueueList<T>::swap()
 	  this->tail = node;
 	  this->tail->next = NULL;
 	  
-	  return node->value;
-
+	  return tail->value;
 }
+
  
 // pop an value from the queue.
 template<typename T>
-T QueueList<T>::pop () {
-  // check if the queue is empty.
-  if (0==this->size) return NULL;
+T QueueStack<T>::pop () {
 
-  // get the value of the head node.
+  if (0==this->size) return NULL;
   T value = this->head->value;
 
   // remove only the head node.
   ListNode<T>* t = this->head->next; 
   releaseNode(this->head); 
   this->head = t;
-  
-  // decrease the values.
   this->size--;
-
-  // return the value.
   return value;
 }
 
 // get an value from the queue.
 template<typename T>
-T QueueList<T>::peek () const 
+T QueueStack<T>::peek () const 
 {
   if (0==this->size) return NULL;
   return this->head->value;

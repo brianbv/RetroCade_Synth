@@ -10,23 +10,54 @@
 
 #include "Patch.h"
 
+	Patch::Patch()
+	{
+		//could use MALLOC for this instead
+
+	}
  
    void Patch::setParameter(byte number, byte value){}  //internal parameter number
 
+
    void Patch::reset()
    {
-	   voiceQueue.clear();
+	    Serial.println("sizeof voice voice*:");
+		Serial.println(sizeof(ListNode<Voice*>)  );
 
-	   ListNode<Voice*>* voiceList = availableVoices;
+		Serial.println("sizeof voice byte:");
+		Serial.println(sizeof(ListNode<byte>)  );
 
-	   voiceQueue.setPool(voiceList, MAX_POLYPHONY);
+		Serial.println("sizeof voice ptr:");
+		Serial.println(sizeof(ListNode<Voice*>*) );
 
-	   activeNoteStack.clear();
+		Serial.println("sizeof char:");
+		Serial.println(sizeof(char) );
 
-	   for (int i=0;i<MAX_POLYPHONY;i++)
-	   {
-		   availableVoices[i].value = NULL;
-	   }
+		Serial.println("sizeof byte:");
+		Serial.println(sizeof(byte) );
+
+		Serial.println("sizeof uchar:");
+		Serial.println(sizeof(unsigned char) );
+
+		voiceQueue.clear();
+		activeNoteStack.clear();
+
+	   //reset pool ptrs	   
+		for (int i=0;i<MAX_POLYPHONY;i++)
+		{
+			availableVoicePool[i]=&availableVoices[i];
+		}
+
+		for (int i=0;i<MAX_RUN;i++)
+		{
+			activeNotePool[i]=&activeNotes[i];
+		}
+
+	   voiceQueue.setPool(availableVoicePool, MAX_POLYPHONY);
+	   activeNoteStack.setPool(activeNotePool,MAX_RUN);
+	   
+ 
+	   //Serial.println("Reset...");
    }
 
    char* Patch::getName()
@@ -62,23 +93,22 @@
    void Patch::setMode(byte mode)
    {
 		patchMode=mode;
+		reset();
 		
-		//memset(&noteState,0,32);
-		
-		switch(patchMode)
-		{
-			case PATCH_MODE_POLY: 
-				_setNote = &Patch::setNotePoly;
-			break;
-			
-			case PATCH_MODE_SPLIT: 				
-				_setNote = &Patch::setNoteSplit;
-			break;
-			
-			case PATCH_MODE_UNISON:
-			default:
-				_setNote = &Patch::setNoteUnison;
-		}
+		//switch(patchMode)
+		//{
+		//	case PATCH_MODE_POLY: 
+		//		_setNote = &Patch::setNotePoly;
+		//	break;
+		//	
+		//	case PATCH_MODE_SPLIT: 				
+		//		_setNote = &Patch::setNoteSplit;
+		//	break;
+		//	
+		//	case PATCH_MODE_UNISON:
+		//	default:
+		//		_setNote = &Patch::setNoteUnison;
+		//}
 		
    }
    /* Note handling */
@@ -145,53 +175,52 @@
    
    void Patch::setNotePoly(int note, boolean active)
    {
-		//Voice* currentVoice = NULL;
-		//
-		//if (active && voiceQueue.count() == polyphony)
-		//{
-		//	//take swaps the first and last items
-		//	currentVoice=voiceQueue.swap();
-		//}
-		//else if (active)
-		//{
-		//	//Ok...
-		//    //currentVoice=voiceQueue.push();
-		//}
-		//else if (voiceQueue.count() > 0)
-		//{
-		// 
-		//	voiceQueue.start();	
+		Voice* currentVoice = NULL;
+		
+		if (active && voiceQueue.count() == polyphony)
+		{
+			//take swaps the first and last items
+			currentVoice=voiceQueue.swap();
+		}
+		else if (active)
+		{
+		    currentVoice=voiceQueue.push();
+		}
+		else if (voiceQueue.count() > 0)
+		{
+		 
+			voiceQueue.start();	
 
-		//	do
-		//	{
-		//	    //voiceQueue.dumpList();
-		//		currentVoice = voiceQueue.peekCurrent();
-		//			
-		//		if (NULL!=currentVoice && currentVoice->getNote() == note)
-		//		{
-		//			voiceQueue.popCurrent();
-		//			break;
-		//		}
-		//		else if (NULL==currentVoice)
-		//		{
-		//			break;
-		//		}
+			do
+			{
+			    //voiceQueue.dumpList();
+				currentVoice = voiceQueue.peekCurrent();
+					
+				if (NULL!=currentVoice && currentVoice->getNote() == note)
+				{
+					voiceQueue.popCurrent();
+					break;
+				}
+				else if (NULL==currentVoice)
+				{
+					break;
+				}
  
-		//	
-		//	}
-		//	while( voiceQueue.next() );
+			
+			}
+			while( voiceQueue.next() );
  
-		//}
-		//else
-		//{
-		//	//Serial.println("[ NOTE OFF CALLED: NO ACTIVE VOICES]");
-		//}
+		}
+		else
+		{
+			//Serial.println("[ NOTE OFF CALLED: NO ACTIVE VOICES]");
+		}
 
 
-		//if (NULL!=currentVoice)
-		//{
-		//	currentVoice->setNote(note,active);
-		//}
+		if (NULL!=currentVoice)
+		{
+			currentVoice->setNote(note,active);
+		}
 	 
    }
    
@@ -212,31 +241,36 @@
    void Patch::setNoteUnison(int note, bool active)
    {   
 	 
-		//bool anyNotesActive = notesActive();
+		bool anyNotesActive = notesActive();
 
 
-		//if (active)
-		//{
-		//	setVoiceState(note,active);
-		//	activeNoteStack.pushHead(note);
-		//}
-		//else
-		//{
-		//	activeNoteStack.popValue(note);
+		if (active)
+		{
+			setVoiceState(note,active);
 
-		//	if (!anyNotesActive)
-		//	{
-		//		setVoiceState(note,active);
-		//	}
-		//	else //if (!previousNoteState)
-		//	{
-		//		note = activeNoteStack.peek();
-		//		active= true;
-		//		setVoiceState(note,active);
-		//	}
-		//}
+			if (activeNoteStack.count() >= MAX_RUN)
+			{
+				activeNoteStack.popTail();
+			}
 
-		 
+			activeNoteStack.pushHead(note);
+
+		}
+		else
+		{
+			activeNoteStack.popValue(note);
+
+			if (!anyNotesActive)
+			{
+				setVoiceState(note,active);
+			}
+			else //if (!previousNoteState)
+			{
+				note = activeNoteStack.peek();
+				active= true;
+				setVoiceState(note,active);
+			}
+		}		 
  
    }
 
