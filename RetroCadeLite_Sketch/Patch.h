@@ -15,15 +15,12 @@
 #include "QueueStack.h"
 
 #define PATCH_MODE_UNISON 0x00
-#define PATCH_MODE_POLY 0x01
-#define PATCH_MODE_SPLIT 0x02
+#define PATCH_MODE_POLY   0x01
+#define PATCH_MODE_SPLIT  0x02
 
 #define MAX_POLYPHONY 3
 #define MAX_RUN 10
-
-//typedef  int (Patch::*FredMemFn)(int i, double d);
-
-
+ 
 class Patch
 {
   
@@ -64,13 +61,11 @@ protected:
    ListNode<byte> activeNotes[MAX_RUN];
    ListNode<byte>* activeNotePool[MAX_RUN];
 
-   //void* memoryPool[MAX_RUN * sizeof(List<Voice*>) + MAX_RUN * sizeof(List<Voice*>*)];
-
    QueueStack<byte> activeNoteStack;
    QueueStack<Voice*> voiceQueue;
    
-   NoteHandler _setNote;
-   IntHandler _setPitchBend;
+   //NoteHandler _setNote;
+   //IntHandler _setPitchBend;
      
    void setNoteState(int note,bool state);
    void setVoiceState(int note,bool state);
@@ -79,7 +74,6 @@ protected:
    void setNotePoly(int note, bool active);
    void setNoteUnison(int note, bool active);
    
- 
    void setPitchBendSplit(int range);
    void setPitchBendDefault(int range);
  

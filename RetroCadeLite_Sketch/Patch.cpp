@@ -21,24 +21,6 @@
 
    void Patch::reset()
    {
-	    Serial.println("sizeof voice voice*:");
-		Serial.println(sizeof(ListNode<Voice*>)  );
-
-		Serial.println("sizeof voice byte:");
-		Serial.println(sizeof(ListNode<byte>)  );
-
-		Serial.println("sizeof voice ptr:");
-		Serial.println(sizeof(ListNode<Voice*>*) );
-
-		Serial.println("sizeof char:");
-		Serial.println(sizeof(char) );
-
-		Serial.println("sizeof byte:");
-		Serial.println(sizeof(byte) );
-
-		Serial.println("sizeof uchar:");
-		Serial.println(sizeof(unsigned char) );
-
 		voiceQueue.clear();
 		activeNoteStack.clear();
 
@@ -55,9 +37,6 @@
 
 	   voiceQueue.setPool(availableVoicePool, MAX_POLYPHONY);
 	   activeNoteStack.setPool(activeNotePool,MAX_RUN);
-	   
- 
-	   //Serial.println("Reset...");
    }
 
    char* Patch::getName()
